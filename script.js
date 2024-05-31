@@ -5,16 +5,17 @@ const products = [
   { id: 1, name: "Product 1", price: 10 },
   { id: 2, name: "Product 2", price: 20 },
   { id: 3, name: "Product 3", price: 30 },
-  { id: 4, name: "Product 4", price: 40 },
+  { id: 4, name: "Product 4", price: 40 }, 
   { id: 5, name: "Product 5", price: 50 },
 ];
-
+ 
 // DOM elements
 const productList = document.getElementById("product-list");
 const cartList = document.getElementById("cart-list");
 const clearCartBtn = document.getElementById("clear-cart-btn");
 
-const cart = JSON.parse(sessionStorage.getItem("cart")) || [];
+let cart = JSON.parse(sessionStorage.getItem("cart")) || [];
+
 // Render product list
 function renderProducts() {
   products.forEach((product) => {
@@ -26,50 +27,55 @@ function renderProducts() {
 
 // Render cart list
 function renderCart() {
-	// get data from session storage
-	
-	cartList.innerHTMl = "";
+	cartList.innerHTML = "";
 	cart.forEach((item) => {
 		 const li = document.createElement("li");
-		li.textContent = `${item.name} - ${item.price}`
+		li.innerHTML = `${item.name} - ${item.price} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`
 		cartList.appendChild(li);
 	});
+	sessionStorage.setItem("cart", JSON.stringify(cart));
 }
 
 // Add item to cart
 function addToCart(productId) {
 	const product = products.find(pId => pId.id === productId);
-	console.log({product});
-	cart.push(product);
-	sessionStorage.setItem("cart", JSON.stringify(cart));
+	cart.push({id: product.id, name: product.name, price: product.price}); 
+	// sessionStorage.setItem("cart", JSON.stringify(cart));
 	renderCart();
 }
 
 // Remove item from cart
 function removeFromCart(productId) {
-	const updatedCart = cart.filter((item) => item.id !== productId);
-	sessionStorage.setItem("cart", JSON.stringify(cart));
+	cart = cart.filter((item) => item.id !== productId);
+	// sessionStorage.setItem("cart", JSON.stringify(cart));
 	renderCart();
 }
 
 // Clear cart
-function clearCart() {
-	sessionStorage.setItem("cart", JSON.stringify([]));
+function clearCart() {  
+	cart = [];
 	renderCart();
 }
 
-// Initial render
-renderProducts();
-renderCart();
+
 
 // Event Listners
 
 productList.addEventListener('click', (e) => {
-console.log(e.target);
-	// if(e.target.classList.contains("add-to-cart-btn")){
-	// 	addToCart(e.target)
-	// }
-
-
-	
+	if(e.target.classList.contains("add-to-cart-btn")){
+		addToCart(parseInt(e.target.dataset.id))
+	}
 })
+
+cartList.addEventListener('click', (e) => {
+	if(e.target.classList.contains("remove-from-cart-btn")){
+		removeFromCart(parseInt(e.target.dataset.id))
+	}
+})
+clearCartBtn.addEventListener('click', () => {
+	clearCart();
+})
+
+// Initial render
+renderProducts();
+renderCart();
